@@ -124,10 +124,12 @@ vchat.onMessage((notice) => {
 | getMessage() | — | string | 获取聊天文字消息 |
 | getUser() | — | string | 获取发送者昵称 |
 | getTime() | — | string | 获取消息时间 |
+| isVoice() | — | boolean | 是否是语音消息 |
 | voiceToText() | — | boolean | 将语音消息转换为文字 |
 | getVoiceText() | — | string | 获取语音转文字后的内容 |
-| isVoice() | — | boolean | 是否是语音消息 |
-| isPhoto() | — | boolean | 是否是照片 |
+| isPhoto() | — | boolean | 是否是图片 |
+| savePhoto() | — | boolean | 保存图片 |
+| getPhotoText() | — | string | 提取图片中的文字 |
 | isFriend() | — | boolean | 是否是好友发送（true=好友，false=自己或系统） |
 | isRedPacket() | — | boolean | 是否是红包 |
 | getRedPacket() | — | boolean | 领取红包，已领取返回 true |

@@ -709,13 +709,61 @@ const MessageObject = function (UIObject) {
     }
 
     /**
-     * 是否是照片
+     * 是否是图片
      * 
      * @returns boolean
      */
     this.isPhoto = function () {
         let photo = this.UIObject.find(descContains("图片"))
         return photo.nonEmpty()
+    }
+
+    /**
+     * 保存图片
+     * 
+     * @returns boolean
+     */
+    this.savePhoto = function () {
+        let photo = this.UIObject.findOnce(descContains("图片"))
+        if (photo) {
+            photo.parent().click()
+            sleep(random(500, 1000))
+            let save = className("FrameLayout").depth(20).drawingOrder(4).findOnce()
+            save.click()
+            back()
+            return true
+        }
+        return false
+    }
+
+    /**
+     * 提取图片中的文字
+     * 
+     * @returns string
+     */
+    this.getPhotoText = function () {
+        let ocrs = []
+        let photo = this.UIObject.findOnce(descContains("图片"))
+        if (photo) {
+            photo.parent().click()
+            sleep(random(500, 1000))
+            let more = className("FrameLayout").depth(20).drawingOrder(6).findOnce()
+            more.click()
+            sleep(random(500, 1000))
+            let ocr = text("提取文字").depth(13).findOnce()
+            if (ocr) {
+                ocr.parent().parent().click()
+                let ts = className("TextView").depth(18).find()
+                if (ts.nonEmpty()) {
+                    ts.forEach(item => {
+                        ocrs.push(item.text())
+                    })
+                    back()
+                }
+            }
+            back()
+        }
+        return ocrs.join("")
     }
 
     /**
