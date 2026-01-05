@@ -169,17 +169,22 @@ export default {
      * @returns boolean
      */
     openUserSession(nickname) {
-        desc("搜索").depth(13).click()
-        sleep(random(500, 1000))
-        setText(nickname)
-        sleep(1000)
-        const user = textContains(nickname).depth(16).findOnce()
-        if (user) {
-            const rect = user.bounds()
-            click(rect.centerX(), rect.centerY())
-            return true
+        let search = desc("搜索").depth(13).findOne(5000)
+        if (search) {
+            search.click()
+            let edit = className("EditText").depth(11).findOne(5000)
+            if (edit) {
+                setText(nickname)
+                const user = textContains(nickname).depth(16).findOne(5000)
+                if (user) {
+                    const rect = user.bounds()
+                    click(rect.centerX(), rect.centerY())
+                    click(rect.centerX(), rect.centerY())
+                    return true
+                }
+                back()
+            }
         }
-        back()
         return false
     },
 
@@ -282,16 +287,24 @@ export default {
      * @returns boolean
      */
     leaveGroup() {
-        desc("聊天信息").depth(18).click()
-        sleep(random(500, 1000))
-        const leave = text("退出群聊").depth(16).findOnce()
-        if (leave) {
-            leave.click()
-            sleep(random(500, 1000))
-            text("退出").depth(10).click()
-            return true
+        if (this.isGroupChat()) {
+            desc("聊天信息").depth(18).click()
+            let list = className("ListView").depth(13).findOne(2000)
+            for (let i = 0; i < 10; i++) {
+                list.scrollDown()
+                const leave = text("退出群聊").depth(16).findOne(2000)
+                if (leave) {
+                    let rect = leave.bounds()
+                    click(rect.centerX(), rect.centerY())
+                    let confirm = text("退出").depth(10).findOne(2000)
+                    if (confirm) {
+                        confirm.click()
+                    }
+                    return true
+                }
+            }
+            back()
         }
-        back()
         return false
     },
 
@@ -345,9 +358,9 @@ export default {
      * @returns boolean
      */
     openChatTools() {
-        const group = classNameContains("ViewGroup").depth(20).findOnce()
-        if (!group) {
-            const more = descContains("更多功能按钮").findOnce()
+        let album = className("TextView").text("相册").findOne(5000)
+        if (!album) {
+            const more = className("ImageButton").descContains("更多功能按钮").findOnce()
             if (more) {
                 more.click()
                 return true
@@ -393,8 +406,7 @@ export default {
      */
     sendText(content) {
         setText(content)
-        sleep(random(500, 1000))
-        let btn = text("发送").depth(21).findOnce()
+        let btn = className("Button").text("发送").findOne(5000)
         if (btn) {
             btn.click()
             return true
@@ -405,21 +417,29 @@ export default {
     /**
      * 发送自定义表情
      * @param {string} name 
+     * @param {number} index 
      */
-    sendCustomEmoji(name) {
-        let btn = desc("表情").depth(20).findOnce()
-        if (btn) {
-            btn.click()
-            sleep(random(500, 1000))
-            let search = desc("搜索表情").depth(22).findOnce()
-            if (search) {
-                search.parent().click()
-                sleep(random(500, 1000))
+    sendCustomEmoji(name, index) {
+        let keyboard = className("ImageButton").desc("键盘").findOnce()
+        if (!keyboard) {
+            let btn = className("ImageButton").desc("表情").findOne(1000)
+            if (btn) {
+                btn.click()
+            }
+        }
+        let search = className("ImageView").desc("搜索表情").findOne(1000)
+        if (search) {
+            search.parent().click()
+            let isopen = desc("精选表情").findOne(5000)
+            if (isopen) {
                 setText(name)
-                sleep(random(2000, 5000))
-                let emojis = classNameContains("View").depth(15).find()
-                if (emojis.length > 5) {
-                    let rect = emojis[random(5, 10)].bounds()
+                className("ImageView").depth(14).findOne(20000)
+                let emojis = className("ImageView").depth(14).find();
+                if (emojis.nonEmpty()) {
+                    if (!index) {
+                        index = 0
+                    }
+                    let rect = emojis[index].bounds()
                     click(rect.centerX(), rect.centerY())
                     return true
                 }
@@ -438,30 +458,31 @@ export default {
      */
     sendPhoto(index, source) {
         if (this.isChat() && this.openChatTools()) {
-            sleep(random(500, 1000))
-            let album = text("相册").depth(25).findOnce()
+            let album = className("TextView").text("相册").findOne(5000)
             if (album) {
-                let rect = album.bounds()
+                let rect = album.parent().bounds();
                 click(rect.centerX(), rect.centerY())
-                sleep(random(500, 1000))
-                if (source) {
-                    click("原图")
-                }
-                const photos = className("CheckBox").depth(12).find()
-                if (photos.nonEmpty()) {
-                    let has = false
-                    for (let i in index) {
-                        if (photos[i]) {
-                            has = true
-                            photos[i].click()
-                            sleep(100)
-                        }
+                let preview = className("TextView").text("预览").findOne(5000)
+                if (preview) {
+                    if (source) {
+                        click("原图")
                     }
-                    if (has) {
-                        click('发送')
-                        return true
-                    } else {
-                        back()
+                    const photos = className("CheckBox").depth(12).find()
+                    if (photos.nonEmpty()) {
+                        let has = false
+                        for (let i in index) {
+                            if (photos[i]) {
+                                has = true
+                                photos[i].click()
+                                sleep(500)
+                            }
+                        }
+                        if (has) {
+                            click('发送')
+                            return true
+                        } else {
+                            back()
+                        }
                     }
                 }
             }
@@ -516,7 +537,7 @@ export default {
      * @returns boolean
      */
     isHome() {
-        return this.getTabs() != null
+        return this.getCurrentTab() === 0
     },
 
     /**
@@ -525,7 +546,7 @@ export default {
      * @returns boolean
      */
     isChat() {
-        return desc("表情").depth(20).exists()
+        return className("ImageButton").descContains("切换").exists()
     },
 
     /**
@@ -586,9 +607,8 @@ export default {
             recents.forEach((item) => {
                 messages.push(new MessageObject(item))
             });
-            return messages
         }
-        return null
+        return messages
     }
 }
 
@@ -773,7 +793,11 @@ const MessageObject = function (UIObject) {
      */
     this.isFriend = function () {
         let avatar = this.UIObject.findOne(className("ImageView").depth(21))
-        return avatar && avatar.bounds().left < 20
+        if (avatar) {
+            let rect = avatar.bounds()
+            return rect.left < 50
+        }
+        return false
     }
 
     /**

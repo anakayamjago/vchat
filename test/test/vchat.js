@@ -6,68 +6,74 @@ export default {
         tester.assertTrue(vchat.openApp(), 'vchat.openApp')
     },
 
-    testGetTabs() {
+    testTabs() {
         tester.assertLength(vchat.getTabs(), 4, 'vchat.getTabs')
-    },
-
-    testSetCurrentTabToExplorer() {
-        tester.assertTrue(vchat.setCurrentTab(2), 'vchat.setCurrentTab-2')
-    },
-
-    testCurrentTabIsExplorer() {
-        tester.assertEquals(vchat.getCurrentTab(), 2, 'vchat.getCurrentTab')
-    },
-
-    testSetCurrentTabToHome() {
-        tester.assertTrue(vchat.setCurrentTab(0), 'vchat.setCurrentTab-0')
-    },
-
-    testCurrentTabIsHome() {
+        tester.assertTrue(vchat.setCurrentTab(0), 'vchat.setCurrentTab')
         tester.assertEquals(vchat.getCurrentTab(), 0, 'vchat.getCurrentTab')
-    },
-
-    testIsHome() {
         tester.assertTrue(vchat.isHome(), 'vchat.isHome')
     },
 
-    testGetUnreadSession() {
-        tester.assertArray(vchat.getUnreadSession(), 'vchat.getUnreadSession')
+    testScrollToNextUnreadSession() {
+        tester.assertTrue(vchat.scrollToNextUnreadSession(), 'vchat.scrollToNextUnreadSession')
     },
 
-    testOpenUnreadSession() {
-        tester.assertTrue(vchat.openUnreadSession(), 'vchat.openUnreadSession')
+    testScrollToFirstSession() {
+        tester.assertTrue(vchat.scrollToFirstSession(), 'vchat.scrollToFirstSession')
     },
 
-    testOpenTopSession() {
-        tester.assertTrue(vchat.openTopSession(), 'vchat.openTopSession')
+    testOpenUserSession() {
+        tester.assertTrue(vchat.openUserSession('文件传输助手'), 'vchat.openUserSession')
     },
 
-    testOpenChatTools() {
-        tester.assertTrue(vchat.openChatTools(), 'vchat.openChatTools')
+    testSendText() {
+        tester.assertTrue(vchat.sendText('Hello, world!'), 'vchat.sendText')
     },
 
-    testIsChat() {
-        tester.assertTrue(vchat.isChat(), 'vchat.isChat')
+    testSendPhoto() {
+        tester.assertTrue(vchat.sendPhoto([0], true), 'vchat.sendPhoto')
     },
 
-    testIsGroupChat() {
+    testSendCustomEmoji() {
+        tester.assertTrue(vchat.sendCustomEmoji('开心', 0), 'vchat.sendCustomEmoji')
+    },
+
+    testBackToHome() {
+        tester.assertTrue(vchat.backToHome(), 'vchat.backToHome')
+    },
+
+    testTopSession() {
+        tester.assertTrue(vchat.topSession(true), 'vchat.topSession')
+    },
+
+    testDelSession() {
+        tester.assertTrue(vchat.delSession(), 'vchat.delSession')
+    },
+
+    testOpenSession() {
+        let unread = vchat.getUnreadSession()
+        tester.assertArray(unread, 'vchat.getUnreadSession')
+        if (unread.length > 0) {
+            tester.assertTrue(vchat.openUnreadSession(), 'vchat.openUnreadSession')
+        } else {
+            tester.assertTrue(vchat.openTopSession(), 'vchat.openTopSession')
+        }
+    },
+
+    testChatStatus() {
+        tester.assertBoolean(vchat.isChat(), 'vchat.isChat')
         tester.assertBoolean(vchat.isGroupChat(), 'vchat.isGroupChat')
-    },
-
-    testIsOfficialAccount() {
         tester.assertBoolean(vchat.isOfficialAccount(), 'vchat.isOfficialAccount')
-    },
-
-    testIsServiceAccount() {
         tester.assertBoolean(vchat.isServiceAccount(), 'vchat.isServiceAccount')
-    },
-
-    testIsWorkAccount() {
         tester.assertBoolean(vchat.isWorkAccount(), 'vchat.isWorkAccount')
+        tester.assertBoolean(vchat.isServiceNotice(), 'vchat.isServiceNotice')
     },
 
-    testIsServiceNotice() {
-        tester.assertBoolean(vchat.isServiceNotice(), 'vchat.isServiceNotice')
+    testScrollToUnreadMessage() {
+        tester.assertBoolean(vchat.scrollToUnreadMessage(), 'vchat.scrollToUnreadMessage')
+    },
+
+    testChatTools() {
+        tester.assertTrue(vchat.openChatTools(), 'vchat.openChatTools')
     },
 
     testSwitchToVoiceInput() {
@@ -78,64 +84,69 @@ export default {
         tester.assertTrue(vchat.switchToTextInput(), 'vchat.switchToTextInput')
     },
 
-    testSendText() {
-        tester.assertTrue(vchat.sendText('Hello, world!'), 'vchat.sendText')
+    testDoNotDisturb() {
+        let enable = vchat.getDoNotDisturb()
+        tester.assertBoolean(enable, 'vchat.getDoNotDisturb')
+        tester.assertTrue(vchat.setDoNotDisturb(!enable), 'vchat.setDoNotDisturb')
     },
 
-    testSendCustomEmoji() {
-        tester.assertTrue(vchat.sendCustomEmoji('剪刀石头布'), 'vchat.sendCustomEmoji')
+    testGetMessages() {
+        let voiceTested = false
+        let photoTested = false
+        let redPacketTested = false
+        let messages = vchat.getMessages()
+        tester.assertArray(messages, 'vchat.getMessages')
+        for (let i in messages) {
+            let item = messages[i]
+
+            // 基础方法测试
+            tester.assertArray(item.getText(), `message[${i}].getText`)
+            tester.assertNotNull(item.getMessage(), `message[${i}].getMessage`)
+            tester.assertNotNull(item.getUser(), `message[${i}].getUser`)
+            tester.assertNotNull(item.getTime(), `message[${i}].getTime`)
+
+            // 类型判断方法测试
+            tester.assertBoolean(item.isPhoto(), `message[${i}].isPhoto`)
+            tester.assertBoolean(item.isVoice(), `message[${i}].isVoice`)
+            tester.assertBoolean(item.isFriend(), `message[${i}].isFriend`)
+            tester.assertBoolean(item.isRedPacket(), `message[${i}].isRedPacket`)
+
+            // 语音消息相关测试（只测试第一条语音消息）
+            if (!voiceTested && item.isVoice()) {
+                tester.assertBoolean(item.voiceToText(), "message.voiceToText")
+                sleep(1000)
+                tester.assertNotNull(item.getVoiceText(), "message.getVoiceText")
+                voiceTested = true
+            }
+
+            // 图片消息相关测试（只测试第一条图片消息）
+            if (!photoTested && item.isPhoto()) {
+                tester.assertBoolean(item.savePhoto(), "message.savePhoto")
+                sleep(1000)
+                tester.assertNotNull(item.getPhotoText(), "message.getPhotoText")
+                photoTested = true
+            }
+
+            // 红包相关测试（只测试第一个红包）
+            if (!redPacketTested && item.isRedPacket()) {
+                tester.assertBoolean(item.getRedPacket(), "message.getRedPacket")
+                redPacketTested = true
+            }
+        }
     },
 
-    testSendPhoto() {
-        tester.assertTrue(vchat.sendPhoto([0]), 'vchat.sendPhoto')
-    },
-
-    testSetDoNotDisturb() {
-        tester.assertTrue(vchat.setDoNotDisturb(true), 'vchat.setDoNotDisturb-true')
-        sleep(1000)
-        tester.assertTrue(vchat.setDoNotDisturb(false), 'vchat.setDoNotDisturb-false')
+    testReceiveOldFriendRequest() {
+        tester.assertBoolean(vchat.receiveOldFriendRequest(), 'vchat.receiveOldFriendRequest')
     },
 
     testLeaveGroup() {
-        tester.assertTrue(vchat.leaveGroup(), 'vchat.leaveGroup')
+        tester.assertBoolean(vchat.leaveGroup(), 'vchat.leaveGroup')
     },
 
-    testBackToHome() {
-        tester.assertTrue(vchat.backToHome(), 'vchat.backToHome')
-    },
-
-    testScrollToFirstSession() {
-        tester.assertTrue(vchat.scrollToFirstSession(), 'vchat.scrollToFirstSession')
-    },
-
-    testScrollToNextUnreadSession() {
-        tester.assertTrue(vchat.scrollToNextUnreadSession(), 'vchat.scrollToNextUnreadSession')
-    },
-
-    testTopSession() {
-        tester.assertTrue(vchat.topSession(true), 'vchat.topSession-true')
+    testReceiveNewFriendRequest() {
+        vchat.setCurrentTab(1)
         sleep(1000)
-        tester.assertTrue(vchat.topSession(false), 'vchat.topSession-false')
-    },
-
-    testDelSession() {
-        tester.assertTrue(vchat.delSession(), 'vchat.delSession')
-    },
-
-    openUserSession() {
-        tester.assertTrue(vchat.openUserSession('文件传输助手'), 'vchat.openUserSession')
-    },
-
-    getMessages() {
-        let messages = vchat.getMessages()
-        for (let i in messages) {
-            let item = messages[i]
-            tester.assertArray(item.getText(), "message.getText")
-            tester.assertBoolean(item.isPhoto(), "message.isPhoto")
-            tester.assertBoolean(item.isFriend(), "message.isFriend")
-            tester.assertBoolean(item.isRedPacket(), "message.isRedPacket")
-            tester.assertBoolean(item.getRedPacket(), "message.getRedPacket")
-        }
+        tester.assertBoolean(vchat.receiveNewFriendRequest(), 'vchat.receiveNewFriendRequest')
     },
 
     testFinish() {

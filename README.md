@@ -84,8 +84,8 @@ vchat.onMessage((notice) => {
 | switchToVoiceInput() | — | boolean | 切换到语音输入 |
 | scrollToUnreadMessage() | — | boolean | 聊天中滚动到第一个未读消息 |
 | sendText(content) | string | boolean | 发送文字消息 |
-| sendCustomEmoji(name) | string | boolean | 发送自定义表情（按名称匹配） |
-| sendPhoto(index, source) | Array(number), boolean | boolean | 发送图片，index 为相册中的图片索引数组（如 [0,1]），source 为是否发送原图 |
+| sendCustomEmoji(name,index?) | string,number | boolean | 发送自定义表情（按名称匹配） |
+| sendPhoto(index, source?) | Array(number), boolean | boolean | 发送图片，index 为相册中的图片索引数组（如 [0,1]），source 为是否发送原图 |
 | leaveGroup() | — | boolean | 退出群聊 |
 | getDoNotDisturb() | — | boolean | 是否开启了免打扰 |
 | setDoNotDisturb(enable) | boolean | boolean | 开启/关闭勿扰模式 |
