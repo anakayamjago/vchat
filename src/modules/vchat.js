@@ -153,11 +153,9 @@ export default {
      * @returns boolean
      */
     openTopSession() {
-        const header = classNameContains("FrameLayout").depth(19).findOnce()
-        if (header) {
-            const rand = random(10, 20)
-            const rect = header.parent().parent().bounds()
-            click(rect.centerX() + rand, rect.bottom + rand)
+        const top = className("LinearLayout").depth(18).findOnce()
+        if (top) {
+            top.parent().click()
             return true
         }
         return false
@@ -377,7 +375,7 @@ export default {
      * @returns boolean
      */
     switchToTextInput() {
-        const keyboard = desc("切换到键盘").depth(21).findOnce()
+        const keyboard = className("ImageButton").desc("切换到键盘").findOnce()
         if (keyboard) {
             keyboard.click()
             return true
@@ -391,7 +389,7 @@ export default {
      * @returns boolean
      */
     switchToVoiceInput() {
-        const voice = desc("切换到按住说话").depth(21).findOnce()
+        const voice = className("ImageButton").desc("切换到按住说话").findOnce()
         if (voice) {
             voice.click()
             return true
@@ -405,6 +403,10 @@ export default {
      * @returns boolean
      */
     sendText(content) {
+        if (className("Button").desc("按住说话").exists()) {
+            this.switchToTextInput()
+            sleep(100)
+        }
         setText(content)
         let btn = className("Button").text("发送").findOne(5000)
         if (btn) {
